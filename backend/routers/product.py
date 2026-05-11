@@ -1,9 +1,25 @@
-from fastapi import APIRouter, Depends
+from fastapi import (
+    APIRouter,
+    Depends,
+    UploadFile,
+    File,
+    HTTPException
+)
+
 from sqlalchemy.orm import Session
 
 from database import SessionLocal
+
 from models.product import Product
-from schemas.product import ProductCreate, ProductResponse
+
+from schemas.product import (
+    ProductCreate,
+    ProductResponse
+)
+
+import shutil
+import os
+
 
 router = APIRouter(
     prefix="/products",
@@ -11,6 +27,7 @@ router = APIRouter(
 )
 
 
+# Database Session
 def get_db():
 
     db = SessionLocal()
@@ -22,43 +39,68 @@ def get_db():
         db.close()
 
 
+# Upload Product Image
+@router.post("/upload")
+def upload_product_image(
+    file: UploadFile = File(...)
+):
+
+    upload_dir = "uploads/products"
+
+    os.makedirs(upload_dir, exist_ok=True)
+
+    file_path = f"{upload_dir}/{file.filename}"
+
+    with open(file_path, "wb") as buffer:
+
+        shutil.copyfileobj(
+            file.file,
+            buffer
+        )
+
+    return {
+
+        "filename": file.filename,
+
+        "path": f"/{file_path}"
+
+    }
+
+
+# Create Product
 @router.post("/", response_model=ProductResponse)
 def create_product(
     product: ProductCreate,
     db: Session = Depends(get_db)
 ):
 
+    # Check SKU already exists
+    existing_sku = db.query(Product).filter(
+        Product.sku == product.sku
+    ).first()
+
+    if existing_sku:
+
+        raise HTTPException(
+            status_code=400,
+            detail="SKU already exists"
+        )
+
+    # Check slug already exists
+    existing_slug = db.query(Product).filter(
+        Product.slug == product.slug
+    ).first()
+
+    if existing_slug:
+
+        raise HTTPException(
+            status_code=400,
+            detail="Slug already exists"
+        )
+
+    # Create Product
     db_product = Product(
-
-        sku=product.sku,
-
-        name=product.name,
-
-        slug=product.slug,
-
-        description=product.description,
-
-        category=product.category,
-
-        product_type=product.product_type,
-
-        label=product.label,
-
-        size=product.size,
-
-        rating=product.rating,
-
-        price=product.price,
-
-        mrp=product.mrp,
-
-        sale_price=product.sale_price,
-
-        stock=product.stock,
-
-        front_image=product.front_image,
-
-        back_image=product.back_image
+        **product.dict()
     )
 
     db.add(db_product)
@@ -70,7 +112,37 @@ def create_product(
     return db_product
 
 
-@router.get("/", response_model=list[ProductResponse])
-def get_products(db: Session = Depends(get_db)):
+# Get All Products
+@router.get(
+    "/",
+    response_model=list[ProductResponse]
+)
+def get_products(
+    db: Session = Depends(get_db)
+):
 
     return db.query(Product).all()
+
+
+# Get Single Product by Slug
+@router.get(
+    "/{slug}",
+    response_model=ProductResponse
+)
+def get_product(
+    slug: str,
+    db: Session = Depends(get_db)
+):
+
+    product = db.query(Product).filter(
+        Product.slug == slug
+    ).first()
+
+    if not product:
+
+        raise HTTPException(
+            status_code=404,
+            detail="Product not found"
+        )
+
+    return product

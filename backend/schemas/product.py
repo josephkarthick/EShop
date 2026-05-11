@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from decimal import Decimal
+from typing import Optional
 
 
 class ProductCreate(BaseModel):
@@ -10,29 +11,79 @@ class ProductCreate(BaseModel):
 
     slug: str
 
-    description: str
+    short_description: Optional[str] = None
 
-    category: str
+    description: Optional[str] = None
 
-    product_type: str
+    category: Optional[str] = None
 
-    label: str
+    brand: Optional[str] = None
 
-    size: str
+    product_type: Optional[str] = None
 
-    rating: int
+    tags: Optional[str] = None
 
-    price: Decimal
+    label: Optional[str] = None
 
-    mrp: Decimal
+    size: Optional[str] = None
 
-    sale_price: Decimal
+    weight: Optional[str] = None
 
-    stock: int
+    rating: Optional[int] = 5
 
-    front_image: str
+    review_count: Optional[int] = 0
 
-    back_image: str
+    price: Optional[Decimal] = 0
+
+    mrp: Optional[Decimal] = 0
+
+    sale_price: Optional[Decimal] = 0
+
+    tax_percent: Optional[Decimal] = 18
+
+    stock: Optional[int] = 0
+
+    minimum_order_qty: Optional[int] = 1
+
+    maximum_order_qty: Optional[int] = 10
+
+    front_image: Optional[str] = None
+
+    back_image: Optional[str] = None
+
+    gallery_image_1: Optional[str] = None
+
+    gallery_image_2: Optional[str] = None
+
+    gallery_image_3: Optional[str] = None
+
+    video_url: Optional[str] = None
+
+    material: Optional[str] = None
+
+    color: Optional[str] = None
+
+    thickness: Optional[str] = None
+
+    capacity: Optional[str] = None
+
+    dimensions: Optional[str] = None
+
+    meta_title: Optional[str] = None
+
+    meta_description: Optional[str] = None
+
+    meta_keywords: Optional[str] = None
+
+    is_featured: Optional[bool] = False
+
+    is_trending: Optional[bool] = False
+
+    is_new_arrival: Optional[bool] = False
+
+    is_day_of_the_deal: Optional[bool] = False
+
+    status: Optional[str] = "active"
 
 
 class ProductResponse(ProductCreate):

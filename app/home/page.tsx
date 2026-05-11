@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -8,6 +9,12 @@ export default function Home() {
   const [products, setProducts] = useState<any[]>([]);
 
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  const [cartItems, setCartItems] = useState<any[]>([]);
+
+  const dealProducts = products.filter(
+  (product:any) => product.is_day_of_the_deal
+);
 
   useEffect(() => {
 
@@ -18,6 +25,55 @@ export default function Home() {
       });
 
   }, []);
+
+  const addToCart = (product: any) => {
+
+    setCartItems((prevItems) => {
+
+      const existingItem = prevItems.find(
+        (item) => item.id === product.id
+      );
+
+      if (existingItem) {
+
+        return prevItems.map((item) =>
+          item.id === product.id
+            ? { ...item, qty: item.qty + 1 }
+            : item
+        );
+
+      }
+
+      return [
+        ...prevItems,
+        {
+          ...product,
+          qty: 1,
+        },
+      ];
+
+    });
+
+      toast.success("Product added to cart");
+  };
+
+  const removeCartItem = (id: number) => {
+
+    setCartItems(
+      cartItems.filter((item) => item.id !== id)
+    );
+
+  };
+
+  const subtotal = cartItems.reduce(
+    (total, item) =>
+      total + (item.sale_price * item.qty),
+    0
+  );
+
+  const vat = subtotal * 0.2;
+
+  const total = subtotal + vat;
 
   return (
     <>
@@ -182,7 +238,12 @@ export default function Home() {
                       </div>
                       <div className="bb-btn-desc">
                         <span className="bb-btn-title">
-                          <b className="bb-cart-count">4</b> items
+                          <b className="bb-cart-count">
+  {cartItems.reduce(
+    (total, item) => total + item.qty,
+    0
+  )}
+</b>
                         </span>
                         <span className="bb-btn-stitle">Cart</span>
                       </div>
@@ -724,328 +785,218 @@ export default function Home() {
             <div id="dealend" className="dealend-timer" />
           </div>
         </div>
-        <div className="col-12">
-          <div className="bb-deal-slider">
-            <div className="bb-deal-block owl-carousel">
-              <div
-                className="bb-deal-card"
-                data-aos="fade-up"
-                data-aos-duration={1000}
-                data-aos-delay={200}
-              >
-                <div className="bb-pro-box">
-                  <div className="bb-pro-img">
-                    <span className="flags">
-                      <span>New</span>
-                    </span>
-                    <a href="javascript:void(0)">
-                      <div className="inner-img">
-                        <img
-                          className="main-img"
-                          src="assets/img/product/lite.png"
-                          alt="product-1"
-                        />
-                        <img
-                          className="hover-img"
-                          src="assets/img/product/lite-back.png"
-                          alt="product-1"
-                        />
-                      </div>
-                    </a>
-                    <ul className="bb-pro-actions">
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Wishlist">
-                          <i className="ri-heart-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a
-                          href="javascript:void(0)"
-                          data-link-action="quickview"
-                          title="Quick View"
-                          data-bs-toggle="modal"
-                          data-bs-target="#bry_quickview_modal"
-                        >
-                          <i className="ri-eye-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="compare.html" title="Compare">
-                          <i className="ri-repeat-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Add To Cart">
-                          <i className="ri-shopping-bag-4-line" />
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bb-pro-contact">
-                    <div className="bb-pro-subtitle">
-                      <a href="shop-left-sidebar-col-3.html">Chocos</a>
-                      <span className="bb-pro-rating">
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-line" />
-                      </span>
-                    </div>
-                    <h4 className="bb-pro-title">
-                      <a href="product-left-sidebar.html">
-                        Small Size Dustbin Bags 17 * 21
-                      </a>
-                    </h4>
-                    <div className="bb-price">
-                      <div className="inner-price">
-                        <span className="new-price">₹199</span>
-                        <span className="old-price">₹399</span>
-                      </div>
-                      <span className="last-items">3 Roll</span>
-                    </div>
-                  </div>
+<div className="col-12">
+
+  <div className="bb-deal-slider">
+
+    <div className="bb-deal-block owl-carousel">
+
+      {products
+        .filter(
+          (product:any) =>
+            product.is_day_of_the_deal
+        )
+        .map((product:any, index:number) => (
+
+        <div
+          className="bb-deal-card"
+          data-aos="fade-up"
+          data-aos-duration={1000}
+          data-aos-delay={(index + 1) * 200}
+          key={product.id}
+        >
+
+          <div className="bb-pro-box">
+
+            <div className="bb-pro-img">
+
+              <span className="flags">
+
+                <span>
+                  {product.label || "New"}
+                </span>
+
+              </span>
+
+              <a href={`/product/${product.slug}`}>
+
+                <div
+                  className="inner-img"
+                  style={{
+                    height: "320px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden"
+                  }}
+                >
+
+                  <img
+                    className="main-img"
+                    src={`http://127.0.0.1:8000${product.front_image}`}
+                    alt={product.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain"
+                    }}
+                  />
+
+                  <img
+                    className="hover-img"
+                    src={`http://127.0.0.1:8000${product.back_image}`}
+                    alt={product.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain"
+                    }}
+                  />
+
                 </div>
-              </div>
-              <div
-                className="bb-deal-card"
-                data-aos="fade-up"
-                data-aos-duration={1000}
-                data-aos-delay={400}
-              >
-                <div className="bb-pro-box">
-                  <div className="bb-pro-img">
-                    <span className="flags">
-                      <span>Hot</span>
-                    </span>
-                    <a href="javascript:void(0)">
-                      <div className="inner-img">
-                        <img
-                          className="main-img"
-                          src="assets/img/product/2.jpg"
-                          alt="product-2"
-                        />
-                        <img
-                          className="hover-img"
-                          src="assets/img/product/back-2.jpg"
-                          alt="product-2"
-                        />
-                      </div>
-                    </a>
-                    <ul className="bb-pro-actions">
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Wishlist">
-                          <i className="ri-heart-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a
-                          href="javascript:void(0)"
-                          data-link-action="quickview"
-                          title="Quick View"
-                          data-bs-toggle="modal"
-                          data-bs-target="#bry_quickview_modal"
-                        >
-                          <i className="ri-eye-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="compare.html" title="Compare">
-                          <i className="ri-repeat-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Add To Cart">
-                          <i className="ri-shopping-bag-4-line" />
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bb-pro-contact">
-                    <div className="bb-pro-subtitle">
-                      <a href="shop-left-sidebar-col-3.html">Juice</a>
-                      <span className="bb-pro-rating">
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-line" />
-                      </span>
-                    </div>
-                    <h4 className="bb-pro-title">
-                      <a href="product-left-sidebar.html">
-                        Organic Apple Juice Pack
-                      </a>
-                    </h4>
-                    <div className="bb-price">
-                      <div className="inner-price">
-                        <span className="new-price">$15</span>
-                        <span className="item-left">3 Left</span>
-                      </div>
-                      <span className="last-items">100 ml</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                className="bb-deal-card"
-                data-aos="fade-up"
-                data-aos-duration={1000}
-                data-aos-delay={600}
-              >
-                <div className="bb-pro-box">
-                  <div className="bb-pro-img">
-                    <a href="javascript:void(0)">
-                      <div className="inner-img">
-                        <img
-                          className="main-img"
-                          src="assets/img/product/3.jpg"
-                          alt="product-3"
-                        />
-                        <img
-                          className="hover-img"
-                          src="assets/img/product/back-3.jpg"
-                          alt="product-3"
-                        />
-                      </div>
-                    </a>
-                    <ul className="bb-pro-actions">
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Wishlist">
-                          <i className="ri-heart-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a
-                          href="javascript:void(0)"
-                          data-link-action="quickview"
-                          title="Quick View"
-                          data-bs-toggle="modal"
-                          data-bs-target="#bry_quickview_modal"
-                        >
-                          <i className="ri-eye-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="compare.html" title="Compare">
-                          <i className="ri-repeat-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Add To Cart">
-                          <i className="ri-shopping-bag-4-line" />
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bb-pro-contact">
-                    <div className="bb-pro-subtitle">
-                      <a href="shop-left-sidebar-col-3.html">Juice</a>
-                      <span className="bb-pro-rating">
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-line" />
-                      </span>
-                    </div>
-                    <h4 className="bb-pro-title">
-                      <a href="product-left-sidebar.html">
-                        Mixed Almond nuts juice Pack
-                      </a>
-                    </h4>
-                    <div className="bb-price">
-                      <div className="inner-price">
-                        <span className="new-price">$32</span>
-                        <span className="old-price">$39</span>
-                      </div>
-                      <span className="last-items">250 g</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div
-                className="bb-deal-card"
-                data-aos="fade-up"
-                data-aos-duration={1000}
-                data-aos-delay={800}
-              >
-                <div className="bb-pro-box">
-                  <div className="bb-pro-img">
-                    <span className="flags">
-                      <span>Sale</span>
-                    </span>
-                    <a href="javascript:void(0)">
-                      <div className="inner-img">
-                        <img
-                          className="main-img"
-                          src="assets/img/product/4.jpg"
-                          alt="product-4"
-                        />
-                        <img
-                          className="hover-img"
-                          src="assets/img/product/back-4.jpg"
-                          alt="product-4"
-                        />
-                      </div>
-                    </a>
-                    <ul className="bb-pro-actions">
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Wishlist">
-                          <i className="ri-heart-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a
-                          href="javascript:void(0)"
-                          data-link-action="quickview"
-                          title="Quick View"
-                          data-bs-toggle="modal"
-                          data-bs-target="#bry_quickview_modal"
-                        >
-                          <i className="ri-eye-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="compare.html" title="Compare">
-                          <i className="ri-repeat-line" />
-                        </a>
-                      </li>
-                      <li className="bb-btn-group">
-                        <a href="javascript:void(0)" title="Add To Cart">
-                          <i className="ri-shopping-bag-4-line" />
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="bb-pro-contact">
-                    <div className="bb-pro-subtitle">
-                      <a href="shop-left-sidebar-col-3.html">Fruits</a>
-                      <span className="bb-pro-rating">
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-fill" />
-                        <i className="ri-star-line" />
-                      </span>
-                    </div>
-                    <h4 className="bb-pro-title">
-                      <a href="product-left-sidebar.html">
-                        Fresh Mango Slice Juice
-                      </a>
-                    </h4>
-                    <div className="bb-price">
-                      <div className="inner-price">
-                        <span className="new-price">$25</span>
-                        <span className="item-left">Out Of Stock</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
+              </a>
+
+              <ul className="bb-pro-actions">
+
+                <li className="bb-btn-group">
+
+                  <a
+                    href="javascript:void(0)"
+                    title="Wishlist"
+                  >
+
+                    <i className="ri-heart-line" />
+
+                  </a>
+
+                </li>
+
+                <li className="bb-btn-group">
+
+                  <a
+                    href="javascript:void(0)"
+                    data-link-action="quickview"
+                    title="Quick View"
+                    data-bs-toggle="modal"
+                    data-bs-target="#bry_quickview_modal"
+                    onClick={() =>
+                      setSelectedProduct(product)
+                    }
+                  >
+
+                    <i className="ri-eye-line" />
+
+                  </a>
+
+                </li>
+
+                <li className="bb-btn-group">
+
+                  <a
+                    href="compare.html"
+                    title="Compare"
+                  >
+
+                    <i className="ri-repeat-line" />
+
+                  </a>
+
+                </li>
+
+                <li className="bb-btn-group">
+
+                  <button
+                    type="button"
+                    title="Add To Cart"
+                    className="border-0 bg-transparent"
+                    onClick={() =>
+                      addToCart(product)
+                    }
+                  >
+
+                    <i className="ri-shopping-bag-4-line" />
+
+                  </button>
+
+                </li>
+
+              </ul>
+
             </div>
+
+            <div className="bb-pro-contact">
+
+              <div className="bb-pro-subtitle">
+
+                <a href="shop-left-sidebar-col-3.html">
+
+                  {product.product_type || "Roll Bag"}
+
+                </a>
+
+                <span className="bb-pro-rating">
+
+                  <i className="ri-star-fill" />
+                  <i className="ri-star-fill" />
+                  <i className="ri-star-fill" />
+                  <i className="ri-star-fill" />
+                  <i className="ri-star-line" />
+
+                </span>
+
+              </div>
+
+              <h4 className="bb-pro-title">
+
+                <a href={`/product/${product.slug}`}>
+
+                  {product.name}
+
+                </a>
+
+              </h4>
+
+              <div className="bb-price">
+
+                <div className="inner-price">
+
+                  <span className="new-price">
+
+                    ₹{product.sale_price}
+
+                  </span>
+
+                  <span className="old-price">
+
+                    ₹{product.mrp}
+
+                  </span>
+
+                </div>
+
+                <span className="last-items">
+
+                  {product.weight ||
+                    `${product.stock} Items`}
+
+                </span>
+
+              </div>
+
+            </div>
+
           </div>
+
         </div>
+
+      ))}
+
+    </div>
+
+  </div>
+
+</div>
       </div>
     </div>
   </section>
@@ -1172,629 +1123,7 @@ export default function Home() {
         <div className="col">
           <div className="tab-content">
             {/* 1st Product tab start */}
-            <div className="tab-pane fade" id="all">
-              <div className="row">
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={200}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <span className="flags">
-                        <span>New</span>
-                      </span>
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/1.jpg"
-                            alt="product-1"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/back-1.jpg"
-                            alt="product-1"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Snacks</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">
-                          Ground Nuts Oil Pack
-                        </a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$15</span>
-                          <span className="old-price">$22</span>
-                        </div>
-                        <span className="last-items">500g</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={600}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/11.jpg"
-                            alt="product-3"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/11.jpg"
-                            alt="product-3"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Fruit</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">
-                          Red Cherry Serbia
-                        </a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$6</span>
-                          <span className="old-price">$8</span>
-                        </div>
-                        <span className="last-items">250g</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={800}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <span className="flags">
-                        <span>Trend</span>
-                      </span>
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/20.jpg"
-                            alt="product-4"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/20.jpg"
-                            alt="product-4"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Leaves</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">Fresh Coriander</a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$1</span>
-                          <span className="item-left">Out Of Stock</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={800}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/4.jpg"
-                            alt="product-4"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/back-4.jpg"
-                            alt="product-4"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Chips</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">
-                          Crunchy Potato Chips
-                        </a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$25</span>
-                          <span className="item-left">Out Of Stock</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={200}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <span className="flags">
-                        <span>Sale</span>
-                      </span>
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/5.jpg"
-                            alt="product-5"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/back-5.jpg"
-                            alt="product-5"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Spices</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">
-                          Black Pepper Spice pack
-                        </a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$32</span>
-                          <span className="item-left">2 Left</span>
-                        </div>
-                        <span className="last-items">1 pack</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={400}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/14.jpg"
-                            alt="product-6"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/14.jpg"
-                            alt="product-6"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Fruit</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">Red Guava</a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$15</span>
-                          <span className="old-price">$17</span>
-                        </div>
-                        <span className="last-items">2kg</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={600}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/7.jpg"
-                            alt="product-7"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/back-7.jpg"
-                            alt="product-7"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Spices</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">
-                          Chilli Flakes Pack
-                        </a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$29</span>
-                          <span className="old-price">$31</span>
-                        </div>
-                        <span className="last-items">250g</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="col-xl-3 col-md-4 col-6 mb-24 bb-product-box"
-                  data-aos="fade-up"
-                  data-aos-duration={1000}
-                  data-aos-delay={600}
-                >
-                  <div className="bb-pro-box">
-                    <div className="bb-pro-img">
-                      <a href="javascript:void(0)">
-                        <div className="inner-img">
-                          <img
-                            className="main-img"
-                            src="assets/img/new-product/19.jpg"
-                            alt="product-3"
-                          />
-                          <img
-                            className="hover-img"
-                            src="assets/img/new-product/19.jpg"
-                            alt="product-3"
-                          />
-                        </div>
-                      </a>
-                      <ul className="bb-pro-actions">
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Wishlist">
-                            <i className="ri-heart-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a
-                            href="javascript:void(0)"
-                            data-link-action="quickview"
-                            title="Quick View"
-                            data-bs-toggle="modal"
-                            data-bs-target="#bry_quickview_modal"
-                          >
-                            <i className="ri-eye-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="compare.html" title="Compare">
-                            <i className="ri-repeat-line" />
-                          </a>
-                        </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="bb-pro-contact">
-                      <div className="bb-pro-subtitle">
-                        <a href="shop-left-sidebar-col-3.html">Vegetable</a>
-                        <span className="bb-pro-rating">
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-fill" />
-                          <i className="ri-star-line" />
-                        </span>
-                      </div>
-                      <h4 className="bb-pro-title">
-                        <a href="product-left-sidebar.html">
-                          Red organic Onion
-                        </a>
-                      </h4>
-                      <div className="bb-price">
-                        <div className="inner-price">
-                          <span className="new-price">$10</span>
-                          <span className="old-price">$15</span>
-                        </div>
-                        <span className="last-items">5kg</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
             {/* 2nd Product tab start */}
             <div className="tab-pane fade show active" id="snack">
               <div className="row">
@@ -1822,17 +1151,17 @@ export default function Home() {
 
             <div className="inner-img">
 
-              <img
-                className="main-img"
-                src={product.front_image}
-                alt={product.name}
-              />
+<img
+  className="main-img"
+  src={`http://127.0.0.1:8000${product.front_image}`}
+  alt={product.name}
+/>
 
-              <img
-                className="hover-img"
-                src={product.back_image}
-                alt={product.name}
-              />
+<img
+  className="hover-img"
+  src={`http://127.0.0.1:8000${product.back_image}`}
+  alt={product.name}
+/>
 
             </div>
 
@@ -1863,11 +1192,16 @@ export default function Home() {
                             <i className="ri-repeat-line" />
                           </a>
                         </li>
-                        <li className="bb-btn-group">
-                          <a href="javascript:void(0)" title="Add To Cart">
-                            <i className="ri-shopping-bag-4-line" />
-                          </a>
-                        </li>
+<li className="bb-btn-group">
+  <button
+    type="button"
+    title="Add To Cart"
+    className="border-0 bg-transparent"
+    onClick={() => addToCart(product)}
+  >
+    <i className="ri-shopping-bag-4-line" />
+  </button>
+</li>
                       </ul>
 
         </div>
@@ -2932,213 +2266,182 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div className="col-md-7 col-12">
-        <div className="bb-inner-cart">
-          <div className="bb-top-contact">
-            <div className="bb-cart-title">
-              <h4>My cart</h4>
-              <a
-                href="javascript:void(0)"
-                className="bb-cart-close"
-                title="Close Cart"
-              />
-            </div>
-          </div>
-          <div className="bb-cart-box item">
-            <ul className="bb-cart-items">
-              <li className="cart-sidebar-list">
-                <a href="javascript:void(0)" className="cart-remove-item">
-                  <i className="ri-close-line" />
-                </a>
-                <a href="javascript:void(0)" className="bb-cart-pro-img">
-                  <img src="assets/img/new-product/1.jpg" alt="product-img-1" />
-                </a>
-                <div className="bb-cart-contact">
-                  <a
-                    href="product-left-sidebar.html"
-                    className="bb-cart-sub-title"
-                  >
-                    Ground Nuts Oil Pack
-                  </a>
-                  <span className="cart-price">
-                    <span className="new-price">$15</span>x 500 g
-                  </span>
-                  <div className="qty-plus-minus">
-                    <input
-                      className="qty-input"
-                      type="text"
-                      name="bb-qtybtn"
-                      defaultValue={1}
-                    />
-                  </div>
-                </div>
-              </li>
-              <li className="cart-sidebar-list">
-                <a href="javascript:void(0)" className="cart-remove-item">
-                  <i className="ri-close-line" />
-                </a>
-                <a href="javascript:void(0)" className="bb-cart-pro-img">
-                  <img src="assets/img/new-product/2.jpg" alt="product-img-2" />
-                </a>
-                <div className="bb-cart-contact">
-                  <a
-                    href="product-left-sidebar.html"
-                    className="bb-cart-sub-title"
-                  >
-                    Organic Litchi Juice Pack
-                  </a>
-                  <span className="cart-price">
-                    <span className="new-price">$25</span>x 500 ml
-                  </span>
-                  <div className="qty-plus-minus">
-                    <input
-                      className="qty-input"
-                      type="text"
-                      name="bb-qtybtn"
-                      defaultValue={1}
-                    />
-                  </div>
-                </div>
-              </li>
-              <li className="cart-sidebar-list">
-                <a href="javascript:void(0)" className="cart-remove-item">
-                  <i className="ri-close-line" />
-                </a>
-                <a href="javascript:void(0)" className="bb-cart-pro-img">
-                  <img src="assets/img/new-product/3.jpg" alt="product-img-3" />
-                </a>
-                <div className="bb-cart-contact">
-                  <a
-                    href="product-left-sidebar.html"
-                    className="bb-cart-sub-title"
-                  >
-                    Crunchy Banana Chips
-                  </a>
-                  <span className="cart-price">
-                    <span className="new-price">$1</span>x 500 g
-                  </span>
-                  <div className="qty-plus-minus">
-                    <input
-                      className="qty-input"
-                      type="text"
-                      name="bb-qtybtn"
-                      defaultValue={1}
-                    />
-                  </div>
-                </div>
-              </li>
-              <li className="cart-sidebar-list">
-                <a href="javascript:void(0)" className="cart-remove-item">
-                  <i className="ri-close-line" />
-                </a>
-                <a href="javascript:void(0)" className="bb-cart-pro-img">
-                  <img src="assets/img/new-product/6.jpg" alt="product-img-3" />
-                </a>
-                <div className="bb-cart-contact">
-                  <a
-                    href="product-left-sidebar.html"
-                    className="bb-cart-sub-title"
-                  >
-                    Small Cardamom Spice Pack
-                  </a>
-                  <span className="cart-price">
-                    <span className="new-price">$4</span>x 500 g
-                  </span>
-                  <div className="qty-plus-minus">
-                    <input
-                      className="qty-input"
-                      type="text"
-                      name="bb-qtybtn"
-                      defaultValue={1}
-                    />
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div className="bb-bottom-cart">
-            <div className="cart-sub-total">
-              <table className="table cart-table">
-                <tbody>
-                  <tr>
-                    <td className="title">Sub-Total :</td>
-                    <td className="price">$300.00</td>
-                  </tr>
-                  <tr>
-                    <td className="title">VAT (20%) :</td>
-                    <td className="price">$60.00</td>
-                  </tr>
-                  <tr>
-                    <td className="title">Total :</td>
-                    <td className="price">$360.00</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="cart-btn">
-              <a href="cart.html" className="bb-btn-1">
-                View Cart
-              </a>
-              <a href="checkout.html" className="bb-btn-2">
-                Checkout
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {/* Category Popup */}
-  <div className="bb-category-sidebar">
-    <div className="bb-category-overlay" />
-    <div className="category-sidebar">
-      <button type="button" className="bb-category-close" title="Close" />
-      <div className="container-fluid">
-        <div className="row mb-minus-24">
-          <div className="col-12">
-            <div className="bb-category-tags">
-              <div className="sub-title">
-                <h4>keywords</h4>
-              </div>
-              <div className="bb-tags">
-                <ul>
-                  <li>
-                    <a href="javascript:void(0)">Clothes</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">Fruits</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">Snacks</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">Dairy</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">Seafood</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">Toys</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">perfume</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">jewelry</a>
-                  </li>
-                  <li>
-                    <a href="javascript:void(0)">Bags</a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
+<div className="col-md-7 col-12">
 
-        </div>
+  <div className="bb-inner-cart">
+
+    <div className="bb-top-contact">
+
+      <div className="bb-cart-title">
+
+        <h4> My cart</h4>
+
+        <a
+          href="#"
+          onClick={(e) => e.preventDefault()}
+          className="bb-cart-close"
+          title="Close Cart"
+        />
+
       </div>
+
+    </div>
+
+    <div className="bb-cart-box item">
+
+      <ul className="bb-cart-items">
+
+        {cartItems.length === 0 ? (
+
+          <li className="cart-sidebar-list text-center p-4">
+            Cart is empty
+          </li>
+
+        ) : (
+
+          cartItems.map((item:any) => (
+
+            <li
+              className="cart-sidebar-list"
+              key={item.id}
+            >
+
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  removeCartItem(item.id);
+                }}
+                className="cart-remove-item"
+              >
+                <i className="ri-close-line" />
+              </a>
+
+              <a
+                href={`/product/${item.slug}`}
+                className="bb-cart-pro-img"
+              >
+
+                <img
+                  src={`http://127.0.0.1:8000${item.front_image}`}
+                  alt={item.name}
+                />
+
+              </a>
+
+              <div className="bb-cart-contact">
+
+                <a
+                  href={`/product/${item.slug}`}
+                  className="bb-cart-sub-title"
+                >
+                  {item.name}
+                </a>
+
+                <span className="cart-price">
+
+                  <span className="new-price">
+                    ₹{item.sale_price}
+                  </span>
+
+                  {" "}x {item.qty}
+
+                </span>
+
+                <div className="qty-plus-minus">
+
+                  <input
+                    className="qty-input"
+                    type="text"
+                    name="bb-qtybtn"
+                    value={item.qty}
+                    readOnly
+                  />
+
+                </div>
+
+              </div>
+
+            </li>
+
+          ))
+
+        )}
+
+      </ul>
+
+    </div>
+
+    <div className="bb-bottom-cart">
+
+      <div className="cart-sub-total">
+
+        <table className="table cart-table">
+
+          <tbody>
+
+            <tr>
+
+              <td className="title">
+                Sub-Total :
+              </td>
+
+              <td className="price">
+                ₹{subtotal.toFixed(2)}
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td className="title">
+                VAT (20%) :
+              </td>
+
+              <td className="price">
+                ₹{vat.toFixed(2)}
+              </td>
+
+            </tr>
+
+            <tr>
+
+              <td className="title">
+                Total :
+              </td>
+
+              <td className="price">
+                ₹{total.toFixed(2)}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      <div className="cart-btn">
+
+        <a href="/cart" className="bb-btn-1">
+          View Cart
+        </a>
+
+        <a href="/checkout" className="bb-btn-2">
+          Checkout
+        </a>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
     </div>
   </div>
+
   {/* Quick view Modal */}
   <div
     className="modal fade quickview-modal"
@@ -3163,7 +2466,7 @@ export default function Home() {
                   <div className="single-slide zoom-image-hover">
                     <img
                       className="img-responsive"
-                      src={selectedProduct?.front_image}
+                        src={`http://127.0.0.1:8000${selectedProduct?.front_image}`}
                       alt="product-img-1"
                     />
                   </div>

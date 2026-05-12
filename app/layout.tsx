@@ -23,56 +23,51 @@ import "../public/assets/css/vendor/jquery-range-ui.css";
 /* Main Template CSS */
 import "../public/assets/css/style.css";
 
+/* Header */
+import Header from "@/components/layout/Header";
+
+/* Footer */
+import Footer from "@/components/layout/Footer";
 
 const geistSans = Geist({
-
   variable: "--font-geist-sans",
-
   subsets: ["latin"],
-
 });
-
 
 const geistMono = Geist_Mono({
-
   variable: "--font-geist-mono",
-
   subsets: ["latin"],
-
 });
 
-
 export const metadata: Metadata = {
-
   title: "VaisKart - Garbage Bags",
-
   description: "VaisKart - Strong & Leak Proof Garbage Bags.",
-
   icons: {
-
     icon: "/assets/img/favicon/favicon.png",
-
   },
-
 };
-
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
   return (
-
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <body className="min-h-screen d-flex flex-column">
 
-      <body className="min-h-full flex flex-col">
 
-        {children}
+
+        {/* Page Content */}
+        <main className="flex-grow-1">
+          {children}
+        </main>
+
+        {/* Global Footer */}
+        <Footer />
 
         {/* Toast Notification */}
         <ToastContainer
@@ -150,9 +145,6 @@ export default function RootLayout({
         />
 
       </body>
-
     </html>
-
   );
-
 }

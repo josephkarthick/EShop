@@ -778,8 +778,13 @@ jQuery(window).on('scroll', function () {
     });
 
     /* Copyright years JS  */
-    var date = new Date().getFullYear();
-    document.getElementById("copyright_year").innerHTML = date;
+	var date = new Date().getFullYear();
+	
+	const copyrightEl = document.getElementById("copyright_year");
+	
+	if (copyrightEl) {
+		copyrightEl.innerHTML = date;
+	}
 
      /* Tools Sidebar */
      $('.bb-tools-sidebar-toggle').on("click", function () {

@@ -7,6 +7,7 @@ from database import engine, Base
 from models.product import Product
 
 from routers.product import router as product_router
+from routers.menu import router as menu_router
 
 
 app = FastAPI()
@@ -40,6 +41,7 @@ app.mount(
 
 # Routers
 app.include_router(product_router)
+app.include_router(menu_router)
 
 
 # Home Route

@@ -10,6 +10,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 import "./globals.css";
 
+
+
 /* Vendor CSS */
 import "../public/assets/css/vendor/bootstrap.min.css";
 import "../public/assets/css/vendor/remixicon.css";
@@ -20,6 +22,8 @@ import "../public/assets/css/vendor/slick.min.css";
 import "../public/assets/css/vendor/animate.min.css";
 import "../public/assets/css/vendor/jquery-range-ui.css";
 
+
+
 /* Main Template CSS */
 import "../public/assets/css/style.css";
 
@@ -28,6 +32,13 @@ import Header from "@/components/layout/Header";
 
 /* Footer */
 import Footer from "@/components/layout/Footer";
+
+/* Go To Top Button */
+import BackToTop from "@/components/BackToTop";
+
+
+/* Save Cart in local storage */
+import { CartProvider } from "@/context/CartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -59,27 +70,22 @@ export default function RootLayout({
     >
       <body className="min-h-screen d-flex flex-column">
 
+        {/* Cart Provider */}
+<CartProvider>
 
+  <Header />
 
-        {/* Page Content */}
-        <main className="flex-grow-1">
-          {children}
-        </main>
+  <main className="flex-grow-1">
+    {children}
+  </main>
 
-        {/* Global Footer */}
-        <Footer />
+  <Footer />
 
-        {/* Toast Notification */}
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          pauseOnHover
-          draggable
-          theme="light"
-        />
+  <BackToTop />
+
+  <ToastContainer />
+
+</CartProvider>
 
         {/* jQuery First */}
         <Script

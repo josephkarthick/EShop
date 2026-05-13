@@ -1,17 +1,22 @@
 "use client";
 
+import { useCart } from "@/context/CartContext";
+
 type ProductCardProps = {
   product: any;
   setSelectedProduct: (product: any) => void;
-  addToCart: (product: any) => void;
 };
 
 export default function ProductCard({
   product,
   setSelectedProduct,
-  addToCart,
 }: ProductCardProps) {
+
+  /* Global Cart */
+  const { addToCart } = useCart();
+
   return (
+
     <div className="bb-pro-box">
 
       {/* Image */}
@@ -164,5 +169,6 @@ export default function ProductCard({
       </div>
 
     </div>
+
   );
 }

@@ -2,15 +2,43 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
-type HeaderProps = {
-  cartItems?: any[];
-};
+import { useCart } from "@/context/CartContext";
 
-export default function Header({
-  cartItems = [],
-}: HeaderProps) {
+export default function Header() {
+
+  const [menuData, setMenuData] = useState<any[]>([]);
+
+  /* Global Cart */
+  const {
+    cartItems,
+    setIsCartOpen,
+  } = useCart();
+
+  /* Fetch Dynamic Menu */
+  useEffect(() => {
+
+    fetch("http://127.0.0.1:8000/menu/categories")
+
+      .then((res) => res.json())
+
+      .then((data) => {
+
+        setMenuData(data.data || []);
+
+      })
+
+      .catch((err) => {
+
+        console.log("Menu API Error:", err);
+
+      });
+
+  }, []);
+
   return (
+
     <header className="bb-header">
 
       {/* Top Header */}
@@ -148,30 +176,36 @@ export default function Header({
                         <ul className="bb-dropdown-menu">
 
                           <li>
+
                             <Link
                               className="dropdown-item"
                               href="/register"
                             >
                               Register
                             </Link>
+
                           </li>
 
                           <li>
+
                             <Link
                               className="dropdown-item"
                               href="/login"
                             >
                               Login
                             </Link>
+
                           </li>
 
                           <li>
+
                             <Link
                               className="dropdown-item"
                               href="/checkout"
                             >
                               Checkout
                             </Link>
+
                           </li>
 
                         </ul>
@@ -203,9 +237,10 @@ export default function Header({
                       </Link>
 
                       {/* Cart */}
-                      <a
-                        href="#"
+                      <button
+                        type="button"
                         className="bb-header-btn bb-cart-toggle"
+                        onClick={() => setIsCartOpen(true)}
                       >
 
                         <div className="header-icon">
@@ -238,7 +273,7 @@ export default function Header({
 
                         </div>
 
-                      </a>
+                      </button>
 
                       {/* Mobile Menu */}
                       <a
@@ -268,7 +303,7 @@ export default function Header({
 
       </div>
 
-      {/* Menu */}
+      {/* Main Menu */}
       <div className="bb-main-menu-desk">
 
         <div className="container">
@@ -298,39 +333,59 @@ export default function Header({
 
                     </li>
 
-                    {/* Products */}
+                    {/* Dynamic Products */}
                     <li className="nav-item bb-dropdown">
 
                       <a
                         className="nav-link bb-dropdown-item"
-                        href="#"
+                        href="javascript:void(0)"
                       >
                         Products
                       </a>
 
                       <ul className="bb-dropdown-menu">
 
-                        <li>
+                        {menuData.map((item, index) => (
 
-                          <Link
-                            className="dropdown-item"
-                            href="/products"
+                          <li
+                            className="bb-mega-dropdown"
+                            key={index}
                           >
-                            Garbage Bags
-                          </Link>
 
-                        </li>
+                            <a
+                              className="bb-mega-item"
+                              href="javascript:void(0)"
+                            >
+                              {item.category}
+                            </a>
 
-                        <li>
+                            <ul className="bb-mega-menu">
 
-                          <Link
-                            className="dropdown-item"
-                            href="/products"
-                          >
-                            Kitchen Bags
-                          </Link>
+                              {item.sizes.map(
+                                (
+                                  size: string,
+                                  idx: number
+                                ) => (
 
-                        </li>
+                                  <li key={idx}>
+
+                                    <Link
+                                      className="dropdown-item"
+                                      href={`/product/${size.toLowerCase()}-garbage-bags`}
+                                    >
+                                      {size}
+                                    </Link>
+
+                                  </li>
+
+                                )
+                              )}
+
+                            </ul>
+
+                          </li>
+
+                        ))}
 
                       </ul>
 
@@ -341,7 +396,7 @@ export default function Header({
 
                       <a
                         className="nav-link bb-dropdown-item"
-                        href="#"
+                        href="javascript:void(0)"
                       >
                         Pages
                       </a>
@@ -388,65 +443,7 @@ export default function Header({
 
       </div>
 
-      {/* Mobile Menu */}
-      <div className="bb-mobile-menu-overlay" />
-
-      <div
-        id="bb-mobile-menu"
-        className="bb-mobile-menu"
-      >
-
-        <div className="bb-menu-title">
-
-          <span className="menu_title">
-            My Menu
-          </span>
-
-          <button
-            type="button"
-            className="bb-close-menu"
-          >
-            ×
-          </button>
-
-        </div>
-
-        <div className="bb-menu-inner">
-
-          <div className="bb-menu-content">
-
-            <ul>
-
-              <li>
-                <Link href="/">Home</Link>
-              </li>
-
-              <li>
-                <Link href="/products">
-                  Products
-                </Link>
-              </li>
-
-              <li>
-                <Link href="/about">
-                  About Us
-                </Link>
-              </li>
-
-              <li>
-                <Link href="/contact">
-                  Contact Us
-                </Link>
-              </li>
-
-            </ul>
-
-          </div>
-
-        </div>
-
-      </div>
-
     </header>
+
   );
 }
